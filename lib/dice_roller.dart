@@ -41,20 +41,34 @@ class DiceRollerState extends State<DiceRoller>
   void rollDice() async {
     _controller.reset();
     Random random = Random();
-    int randNumber = random.nextInt(6) + 1;
-    String myText = "Rolled $randNumber";
     setState(() {
       disabled = true;
-      _controller.forward();
-      changableText = myText;
     });
-
-    await Future.delayed(const Duration(milliseconds: 500), () {
+    int lastRand = random.nextInt(6) + 1;
+    for (int i = 1; i <= 5; i++) {
+      int randNumber = random.nextInt(6) + 1;
+      String myText = "Rolled $randNumber";
+      int dur = (i > 4 || i < 3) ? 700 : 300;
       setState(() {
+        if (i == 5) {
+          while (randNumber == lastRand) {
+            randNumber = random.nextInt(6) + 1;
+          }
+          lastRand = randNumber;
+          myText = "Rolled $randNumber";
+        }
+        _controller.duration = Duration(milliseconds: dur);
         assetsStr = "assets/images/dice-$randNumber.png";
-        disabled = false;
+        changableText = myText;
+        _controller.forward();
       });
-    });
+
+      await Future.delayed(const Duration(milliseconds: 100), () {
+        setState(() {
+          disabled = false;
+        });
+      });
+    }
   }
 
   @override
